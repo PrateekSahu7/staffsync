@@ -4,9 +4,11 @@ A web-based HR management system built on the MERN stack (MongoDB, Express, Reac
 
 | Role | What they can do |
 |------|------------------|
-| HR | Add, edit and delete employees; approve or reject any leave; view all attendance; post announcements and company news |
-| Manager | Review leave requests from their team; view team attendance; create training programs and enrol team members; apply for leave (goes to HR) |
-| Employee | Apply for leave and track its status; check in and out; edit personal details; read announcements; see assigned training |
+| HR | Add, edit and delete employees; approve or reject any leave; view all attendance; post and delete announcements; run reports (attendance, leaves, headcount) with CSV export |
+| Manager | Review leave requests from their team; view team attendance; create training programs, enrol team members and track their status; post announcements (and delete their own); apply for leave (goes to HR) |
+| Employee | Apply for leave and track its status; check in and out; edit personal details and change password; read announcements; see assigned training |
+
+Each role gets its own dashboard numbers (HR: headcount, pending leaves, who is in today; managers: team size, team leaves, trainings; employees: today's attendance, leave days taken, trainings).
 
 ## Tech stack
 
@@ -50,12 +52,12 @@ server/
   config/db.js         MongoDB connection
   middleware/auth.js   JWT check (protect) and role check (authorize)
   models/              User, Leave, Attendance, Announcement, Training
-  routes/              auth, employees, leaves, attendance, announcements, training
+  routes/              auth, employees, leaves, attendance, announcements, training, reports
 client/
   src/App.jsx          routes
   src/AuthContext.jsx  login state and token handling
   src/api.js           Axios instance that attaches the JWT
-  src/pages/           Login, Dashboard, Employees, Leaves, Attendance, Announcements, Training
+  src/pages/           Login, Dashboard, Employees, Leaves, Attendance, Announcements, Training, Reports
 ```
 
 ## API summary
@@ -66,6 +68,7 @@ All routes except login need `Authorization: Bearer <token>`.
 |-----------------|-----|---------|
 | POST /api/auth/login | anyone | Log in, returns token |
 | GET, PUT /api/auth/me | any | View or update own profile |
+| PUT /api/auth/password | any | Change own password |
 | GET /api/employees | HR, manager | List people (managers see their team) |
 | POST, PUT, DELETE /api/employees | HR | Manage employees |
 | POST /api/leaves | employee, manager | Apply for leave |
@@ -74,8 +77,10 @@ All routes except login need `Authorization: Bearer <token>`.
 | PUT /api/leaves/:id/status | HR, manager | Approve or reject |
 | POST /api/attendance/check-in, PUT /api/attendance/check-out | any | Mark attendance |
 | GET /api/attendance/mine, GET /api/attendance | any, HR and manager | History and team view |
-| GET, POST, DELETE /api/announcements | read: any, write: HR | Announcements and news |
-| GET, POST, PUT, DELETE /api/training | read: any, write: manager | Training programs |
+| GET, POST, DELETE /api/announcements | read: any, write: HR and manager (managers delete only their own) | Announcements and news |
+| GET, POST, PUT, DELETE /api/training | read: any, write: manager | Training programs (status is upcoming, ongoing or completed, worked out from the dates) |
+| GET /api/reports/dashboard | any | Role-specific dashboard numbers |
+| GET /api/reports/attendance, /leaves (`?from=&to=`), /employees | HR | Report data used by the Reports page |
 
 ## Deploying
 

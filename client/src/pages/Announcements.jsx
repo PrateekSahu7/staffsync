@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext.jsx';
 export default function Announcements() {
   const { user } = useAuth();
   const isHR = user.role === 'hr';
+  const canPost = isHR || user.role === 'manager';
   const [items, setItems] = useState([]);
   const [form, setForm] = useState({ title: '', body: '', category: 'announcement' });
   const [error, setError] = useState('');
@@ -26,8 +27,12 @@ export default function Announcements() {
 
   const remove = async (id) => {
     if (!window.confirm('Delete this post?')) return;
-    await api.delete(`/announcements/${id}`);
-    load();
+    try {
+      await api.delete(`/announcements/${id}`);
+      load();
+    } catch (err) {
+      setError(errMsg(err));
+    }
   };
 
   return (
@@ -35,7 +40,7 @@ export default function Announcements() {
       <h3 className="page-title mb-4">Announcements and news</h3>
       {error && <div className="alert alert-danger py-2">{error}</div>}
 
-      {isHR && (
+      {canPost && (
         <form className="panel p-4 mb-4" onSubmit={post}>
           <h5 className="mb-3">New post</h5>
           <div className="row g-3">
@@ -61,7 +66,9 @@ export default function Announcements() {
                 {p.category === 'news' ? 'Company news' : 'Announcement'} - {p.postedBy?.name} - {fmtDate(p.createdAt)}
               </div>
             </div>
-            {isHR && <button className="btn btn-sm btn-outline-danger" onClick={() => remove(p._id)}>Delete</button>}
+            {(isHR || p.postedBy?._id === user._id) && (
+              <button className="btn btn-sm btn-outline-danger" onClick={() => remove(p._id)}>Delete</button>
+            )}
           </div>
           <div style={{ whiteSpace: 'pre-wrap' }}>{p.body}</div>
         </div>

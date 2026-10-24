@@ -1,14 +1,45 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api, { errMsg, fmtDate } from '../api';
 import { useAuth } from '../AuthContext.jsx';
 
+// Each role gets its own set of numbers, each linking to the page behind it
+const layouts = {
+  hr: (s) => [
+    { label: 'People in the company', value: s.employees, to: '/employees' },
+    { label: 'Leave requests waiting', value: s.pendingLeaves, to: '/leaves' },
+    { label: 'Checked in today', value: s.presentToday, to: '/attendance' },
+    { label: 'On approved leave today', value: s.onLeaveToday, to: '/leaves' },
+    { label: 'Trainings upcoming or running', value: s.activeTrainings, to: '/training' },
+  ],
+  manager: (s) => [
+    { label: 'People on your team', value: s.teamSize, to: '/employees' },
+    { label: 'Team leave requests waiting', value: s.pendingLeaves, to: '/leaves' },
+    { label: 'Team checked in today', value: s.presentToday, to: '/attendance' },
+    { label: 'Trainings upcoming', value: s.upcomingTrainings, to: '/training' },
+    { label: 'Trainings running now', value: s.ongoingTrainings, to: '/training' },
+  ],
+  employee: (s) => [
+    { label: 'Today', value: s.attendanceToday, to: '/attendance', text: true },
+    { label: 'Leave days taken this year', value: s.daysTaken, to: '/leaves' },
+    { label: 'Leave requests waiting', value: s.pendingLeaves, to: '/leaves' },
+    { label: 'Your trainings upcoming or running', value: s.activeTrainings, to: '/training' },
+  ],
+};
+
+const heading = { hr: 'HR overview', manager: 'Team overview', employee: 'Your overview' };
+
 export default function Dashboard() {
   const { user, setUser } = useAuth();
+  const [stats, setStats] = useState(null);
   const [posts, setPosts] = useState([]);
   const [form, setForm] = useState({ name: user.name, phone: user.phone || '', address: user.address || '' });
   const [msg, setMsg] = useState(null);
+  const [pw, setPw] = useState({ currentPassword: '', newPassword: '' });
+  const [pwMsg, setPwMsg] = useState(null);
 
   useEffect(() => {
+    api.get('/reports/dashboard').then((r) => setStats(r.data.stats)).catch(() => {});
     api.get('/announcements').then((r) => setPosts(r.data.slice(0, 3))).catch(() => {});
   }, []);
 
@@ -17,19 +48,47 @@ export default function Dashboard() {
     try {
       const { data } = await api.put('/auth/me', form);
       setUser({ ...user, ...data });
-      setMsg({ ok: true, text: 'Profile saved' });
+      setMsg({ ok: true, text: 'Details saved' });
     } catch (err) {
       setMsg({ ok: false, text: errMsg(err) });
     }
   };
 
+  const changePassword = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put('/auth/password', pw);
+      setPw({ currentPassword: '', newPassword: '' });
+      setPwMsg({ ok: true, text: 'Password changed' });
+    } catch (err) {
+      setPwMsg({ ok: false, text: errMsg(err) });
+    }
+  };
+
+  const items = stats ? layouts[user.role](stats) : [];
+
   return (
     <>
-      <h3 className="page-title mb-4">Welcome back, {user.name.split(' ')[0]}</h3>
+      <h3 className="page-title mb-1">Welcome back, {user.name.split(' ')[0]}</h3>
+      <p className="text-muted mb-4">{heading[user.role]}</p>
+
+      <div className="panel stat-strip mb-4">
+        {!stats && <div className="p-4 text-muted">Loading your numbers...</div>}
+        {items.map((it) => (
+          <Link key={it.label} to={it.to} className="stat">
+            <b className={it.text ? 'text' : ''}>{it.value}</b>
+            <span>{it.label}</span>
+          </Link>
+        ))}
+      </div>
+
       <div className="row g-4">
         <div className="col-lg-7">
           <div className="panel p-4">
-            <h5 className="mb-3">Latest from HR</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="mb-0">Latest announcements</h5>
+              <Link to="/announcements" className="small">See all</Link>
+            </div>
             {posts.length === 0 && <p className="text-muted mb-0">Nothing posted yet.</p>}
             {posts.map((p) => (
               <div key={p._id} className="mb-3 pb-3 border-bottom">
@@ -42,8 +101,9 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+
         <div className="col-lg-5">
-          <form className="panel p-4" onSubmit={save}>
+          <form className="panel p-4 mb-4" onSubmit={save}>
             <h5 className="mb-3">My details</h5>
             <dl className="row small mb-3">
               <dt className="col-4 text-muted fw-normal">Email</dt><dd className="col-8">{user.email}</dd>
@@ -59,6 +119,16 @@ export default function Dashboard() {
             <label className="form-label">Address</label>
             <textarea className="form-control mb-3" rows="2" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
             <button className="btn btn-primary">Save details</button>
+          </form>
+
+          <form className="panel p-4" onSubmit={changePassword}>
+            <h5 className="mb-3">Change password</h5>
+            {pwMsg && <div className={`alert py-2 ${pwMsg.ok ? 'alert-success' : 'alert-danger'}`}>{pwMsg.text}</div>}
+            <label className="form-label">Current password</label>
+            <input type="password" className="form-control mb-2" required value={pw.currentPassword} onChange={(e) => setPw({ ...pw, currentPassword: e.target.value })} />
+            <label className="form-label">New password (at least 6 characters)</label>
+            <input type="password" className="form-control mb-3" required minLength={6} value={pw.newPassword} onChange={(e) => setPw({ ...pw, newPassword: e.target.value })} />
+            <button className="btn btn-primary">Change password</button>
           </form>
         </div>
       </div>

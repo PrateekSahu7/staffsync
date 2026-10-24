@@ -8,6 +8,7 @@ import Leaves from './pages/Leaves.jsx';
 import Attendance from './pages/Attendance.jsx';
 import Announcements from './pages/Announcements.jsx';
 import Training from './pages/Training.jsx';
+import Reports from './pages/Reports.jsx';
 import { useAuth } from './AuthContext.jsx';
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
         <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
         <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute roles={['hr']}><Reports /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

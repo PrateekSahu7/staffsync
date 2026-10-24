@@ -3,6 +3,7 @@ import api, { errMsg, fmtDate } from '../api';
 import { useAuth } from '../AuthContext.jsx';
 
 const empty = { title: '', description: '', startDate: '', endDate: '', participants: [] };
+const statusBadge = { upcoming: 'info text-dark', ongoing: 'success', completed: 'secondary' };
 const dateInput = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '');
 
 export default function Training() {
@@ -13,6 +14,7 @@ export default function Training() {
   const [form, setForm] = useState(empty);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   const load = () => api.get('/training').then((r) => setItems(r.data));
   useEffect(() => {
@@ -58,6 +60,8 @@ export default function Training() {
       participants: f.participants.includes(id) ? f.participants.filter((p) => p !== id) : [...f.participants, id],
     }));
 
+  const shown = filter === 'all' ? items : items.filter((t) => t.status === filter);
+
   return (
     <>
       <h3 className="page-title mb-4">Training and development</h3>
@@ -91,20 +95,31 @@ export default function Training() {
         </form>
       )}
 
+      <div className="d-flex align-items-center gap-2 mb-3">
+        <span className="text-muted">Show</span>
+        <select className="form-select w-auto" value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <option value="all">All programs</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="ongoing">Running now</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
       <div className="panel table-responsive">
         <table className="table mb-0 align-middle">
-          <thead><tr><th>Program</th><th>Dates</th><th>Led by</th><th>Attending</th>{isManager && <th />}</tr></thead>
+          <thead><tr><th>Program</th><th>Dates</th><th>Led by</th><th>Status</th><th>Attending</th>{isManager && <th />}</tr></thead>
           <tbody>
-            {items.length === 0 && (
-              <tr><td colSpan="5" className="text-muted text-center py-4">
-                {isManager ? 'No programs yet. Create one above.' : 'You are not enrolled in any training program.'}
+            {shown.length === 0 && (
+              <tr><td colSpan="6" className="text-muted text-center py-4">
+                {items.length > 0 ? 'No programs match this filter.' : isManager ? 'No programs yet. Create one above.' : 'You are not enrolled in any training program.'}
               </td></tr>
             )}
-            {items.map((t) => (
+            {shown.map((t) => (
               <tr key={t._id}>
                 <td><strong>{t.title}</strong><div className="small text-muted">{t.description}</div></td>
                 <td className="text-nowrap">{fmtDate(t.startDate)} to {fmtDate(t.endDate)}</td>
                 <td>{t.createdBy?.name}</td>
+                <td><span className={`badge bg-${statusBadge[t.status]}`}>{t.status}</span></td>
                 <td>{t.participants.map((p) => p.name).join(', ') || '-'}</td>
                 {isManager && (
                   <td className="text-end text-nowrap">

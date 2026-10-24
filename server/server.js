@@ -16,6 +16,7 @@ app.use('/api/leaves', require('./routes/leaves'));
 app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/training', require('./routes/training'));
+app.use('/api/reports', require('./routes/reports'));
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
 

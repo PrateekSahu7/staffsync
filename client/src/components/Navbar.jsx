@@ -12,6 +12,7 @@ export default function Navbar() {
     { to: '/attendance', label: 'Attendance' },
     { to: '/announcements', label: 'Announcements' },
     { to: '/training', label: 'Training' },
+    ...(user.role === 'hr' ? [{ to: '/reports', label: 'Reports' }] : []),
   ];
 
   return (
