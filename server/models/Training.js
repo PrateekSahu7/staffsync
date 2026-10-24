@@ -8,8 +8,8 @@ const trainingSchema = new mongoose.Schema(
     description: { type: String, trim: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
+    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }],
   },
   { timestamps: true, toJSON: { virtuals: true } }
 );

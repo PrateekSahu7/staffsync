@@ -1,26 +1,43 @@
-// Creates demo accounts: node seed.js
+// Creates demo accounts: npm run seed. This DELETES all existing people and announcements.
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const Employee = require('./models/Employee');
+const Leave = require('./models/Leave');
+const Attendance = require('./models/Attendance');
+const Training = require('./models/Training');
 const Announcement = require('./models/Announcement');
+
+if (process.env.NODE_ENV === 'production') {
+  console.error('Refusing to seed while NODE_ENV is production: this wipes all data.');
+  process.exit(1);
+}
+
+async function person({ name, email, password, role, department, designation, manager }) {
+  const user = await User.create({ email, password, role });
+  return Employee.create({ user: user._id, name, department, designation, manager });
+}
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  await Promise.all([User.deleteMany({}), Announcement.deleteMany({})]);
+  await Promise.all([
+    User.deleteMany({}), Employee.deleteMany({}), Leave.deleteMany({}),
+    Attendance.deleteMany({}), Training.deleteMany({}), Announcement.deleteMany({}),
+  ]);
 
-  const hr = await User.create({
+  const hr = await person({
     name: 'Hana Rao', email: 'hr@staffsync.com', password: 'hr12345', role: 'hr',
     department: 'People Operations', designation: 'HR Lead',
   });
-  const manager = await User.create({
+  const manager = await person({
     name: 'Mohan Das', email: 'manager@staffsync.com', password: 'manager123', role: 'manager',
     department: 'Engineering', designation: 'Engineering Manager',
   });
-  await User.create({
+  await person({
     name: 'Esha Nair', email: 'employee@staffsync.com', password: 'employee123', role: 'employee',
     department: 'Engineering', designation: 'Software Engineer', manager: manager._id,
   });
-  await User.create({
+  await person({
     name: 'Ravi Kumar', email: 'ravi@staffsync.com', password: 'employee123', role: 'employee',
     department: 'Engineering', designation: 'QA Engineer', manager: manager._id,
   });

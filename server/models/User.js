@@ -1,18 +1,12 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+// Login account: credentials and role only. Personal details live in Employee.
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, enum: ['hr', 'manager', 'employee'], default: 'employee' },
-    department: { type: String, trim: true },
-    designation: { type: String, trim: true },
-    phone: { type: String, trim: true },
-    address: { type: String, trim: true },
-    manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    joinDate: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

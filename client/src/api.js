@@ -33,3 +33,6 @@ export function downloadCSV(filename, rows) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// Today's date in the browser's own time zone as YYYY-MM-DD (used for report date ranges)
+export const localDay = () => new Date().toLocaleDateString('en-CA');
