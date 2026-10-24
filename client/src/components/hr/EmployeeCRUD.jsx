@@ -50,8 +50,9 @@ export default function EmployeeCRUD() {
     }
   };
 
-  const managers = list.filter((u) => u.role === 'manager');
-
+  const managers = list.filter(
+    (u) => ['manager', 'hr'].includes(u.role)
+  );
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
