@@ -162,5 +162,5 @@ All routes except login need `Authorization: Bearer <token>`.
 
 ## Links
 
-- Live demo: _add your link here_
-- GitHub: _add your link here_
+- Live demo: https://staffsync-orcin.vercel.app
+- GitHub: https://github.com/PrateekSahu7/staffsync
