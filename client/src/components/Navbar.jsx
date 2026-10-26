@@ -1,46 +1,45 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext.jsx';
+import Icon from './ui/Icon.jsx';
+import { Avatar } from './ui/ui.jsx';
 
+// Left sidebar: links for the current role and the signed-in person
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const links = [
-    { to: '/', label: 'Dashboard', end: true },
-    ...(user.role !== 'employee' ? [{ to: '/employees', label: user.role === 'hr' ? 'Employees' : 'My team' }] : []),
-    { to: '/leaves', label: 'Leaves' },
-    { to: '/attendance', label: 'Attendance' },
-    { to: '/announcements', label: 'Announcements' },
-    { to: '/training', label: 'Training' },
-    ...(user.role === 'hr' ? [{ to: '/reports', label: 'Reports' }] : []),
+    { to: '/', label: 'Dashboard', icon: 'home', end: true },
+    ...(user.role !== 'employee' ? [{ to: '/employees', label: user.role === 'hr' ? 'Employees' : 'My team', icon: 'users' }] : []),
+    { to: '/leaves', label: 'Leaves', icon: 'file' },
+    { to: '/attendance', label: 'Attendance', icon: 'clock' },
+    { to: '/announcements', label: 'Announcements', icon: 'bell' },
+    { to: '/training', label: 'Training', icon: 'book' },
+    ...(user.role === 'hr'
+      ? [{ to: '/reports', label: 'Reports', icon: 'chart' }, { to: '/register', label: 'Register a person', icon: 'userplus' }]
+      : []),
   ];
 
   return (
-    <nav className="navbar navbar-expand-lg app-nav">
-      <div className="container">
-        <span className="navbar-brand">StaffSync</span>
-        <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
-          <span className="navbar-toggler-icon" style={{ filter: 'invert(1)' }} />
-        </button>
-        <div className="collapse navbar-collapse" id="nav">
-          <ul className="navbar-nav me-auto gap-1">
-            {links.map((l) => (
-              <li className="nav-item" key={l.to}>
-                <NavLink to={l.to} end={l.end} className="nav-link">{l.label}</NavLink>
-              </li>
-            ))}
-          </ul>
-          <div className="d-flex align-items-center gap-3 text-white-50 small">
-            <span>{user.name} ({user.role})</span>
-            <button
-              className="btn btn-sm btn-outline-light"
-              onClick={() => { logout(); navigate('/login'); }}
-            >
-              Log out
-            </button>
-          </div>
+    <aside className="sidebar">
+      <div className="brand"><span className="brand-mark">S</span>StaffSync</div>
+      <nav className="side-nav" aria-label="Main">
+        {links.map((l) => (
+          <NavLink key={l.to} to={l.to} end={l.end} className="side-link">
+            <Icon name={l.icon} />{l.label}
+          </NavLink>
+        ))}
+      </nav>
+      <div className="side-user">
+        <Avatar name={user.name} size={36} />
+        <div className="side-who">
+          <div className="side-name">{user.name}</div>
+          <div className="side-role">{user.role === 'hr' ? 'HR' : user.role}</div>
         </div>
+        <button className="icon-btn" aria-label="Log out" title="Log out" onClick={() => { logout(); navigate('/login'); }}>
+          <Icon name="logout" />
+        </button>
       </div>
-    </nav>
+    </aside>
   );
 }

@@ -59,24 +59,27 @@ Every person (employee, manager or HR) has one `User` (login) and one `Employee`
 ```
 client/src/
   index.js                  entry point, renders <App /> into the page
-  App.jsx                   routes and overall layout
-  App.css                   global styling
-  AuthContext.jsx  api.js  usePolling.js
+  App.jsx                   routes; signed-in pages are wrapped in the Layout
+  App.css                   design tokens (light and dark), layout and component styles
+  AuthContext.jsx  ThemeContext.jsx  api.js  usePolling.js  useCountUp.js
   components/
-    Navbar.jsx  ProtectedRoute.jsx
-    DashboardView.jsx  UpcomingTrainings.jsx  LeaveReviewTable.jsx   shared building blocks
+    Layout.jsx  Navbar.jsx (sidebar)  CheckInChip.jsx (check in or out from any page)
+    ProtectedRoute.jsx  DashboardView.jsx  UpcomingTrainings.jsx
+    LeaveReviewTable.jsx  AnnouncementFeed.jsx            shared building blocks
+    ui/        Icon, Toast, Confirm (dialogs), ui.jsx (Skeleton, EmptyState, Avatar, Pill, PageHeader)
+    charts/    BarList.jsx, Donut.jsx
     auth/
       Login.jsx                 login form
       Register.jsx              HR registers a new employee, manager or HR
     employee/
       Announcements.jsx         read announcements, news and events
-      Attendance.jsx            check in and out, my history
+      Attendance.jsx            live day ring, check in and out, last 14 days, history
       LeaveApply.jsx            apply for leave
       LeaveList.jsx             my leave history and status
     hr/
       AnnouncementsManager.jsx  post and manage announcements (managers use it too)
       AttendanceSummary.jsx     attendance overview (HR: everyone, manager: team)
-      EmployeeCRUD.jsx          add, view, edit, delete employees (managers see their team read-only)
+      EmployeeCRUD.jsx          add, view, edit, delete people (managers see their team read-only)
       LeaveApplications.jsx     HR approves or rejects leave
       Reports.jsx               attendance, leave and headcount reports with CSV export
     manager/
@@ -85,6 +88,15 @@ client/src/
   pages/
     EmployeeDashboard.jsx  HrDashboard.jsx  ManagerDashboard.jsx
 ```
+
+## Interface features
+
+- Light and dark mode (remembers your choice, follows the system setting at first).
+- A check-in control in the top bar on every page, with your hours counting live.
+- Search, filters and sortable columns on people, leave and attendance lists.
+- HR dashboard charts: people by department and this month's leave requests (hover a legend row to isolate a slice).
+- Confirmation dialogs (with a note field when rejecting leave), toast messages, loading placeholders and helpful empty states.
+- Works on phones: the sidebar slides in from the left. Respects the "reduce motion" setting.
 
 ## Run it locally
 
@@ -101,7 +113,7 @@ npm run dev                 # API on http://localhost:5000
 # 2. Frontend (new terminal)
 cd client
 npm install
-cp .env.example .env
+cp .env.example .env        # set VITE_DEMO_LOGINS=true to show one-click demo logins on the login page
 npm run dev                 # app on http://localhost:5173
 ```
 

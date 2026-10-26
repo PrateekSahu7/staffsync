@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { errMsg } from '../../api';
+import { useToast } from '../ui/Toast.jsx';
+import { PageHeader } from '../ui/ui.jsx';
 
 const empty = { name: '', email: '', password: '', role: 'employee', department: '', designation: '', manager: '' };
 
 // HR registers a new person: creates their login and their employee record
 export default function Register() {
+  const toast = useToast();
   const [form, setForm] = useState(empty);
   const [managers, setManagers] = useState([]);
-  const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -19,14 +21,13 @@ export default function Register() {
 
   const submit = async (e) => {
     e.preventDefault();
-    setMsg(null);
     setBusy(true);
     try {
       const { data } = await api.post('/auth/register', { ...form, manager: form.manager || null });
-      setMsg({ ok: true, text: `${data.name} is registered and can now log in as ${data.role}.` });
+      toast.success(`${data.name} is registered and can log in as ${data.role === 'hr' ? 'HR' : data.role}.`);
       setForm(empty);
     } catch (err) {
-      setMsg({ ok: false, text: errMsg(err) });
+      toast.error(errMsg(err));
     } finally {
       setBusy(false);
     }
@@ -34,12 +35,10 @@ export default function Register() {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h3 className="page-title mb-0">Register a person</h3>
-        <Link to="/employees" className="btn btn-outline-primary">Back to employees</Link>
-      </div>
-      <form className="panel p-4" style={{ maxWidth: 640 }} onSubmit={submit}>
-        {msg && <div className={`alert py-2 ${msg.ok ? 'alert-success' : 'alert-danger'}`}>{msg.text}</div>}
+      <PageHeader title="Register a person" subtitle="Creates their login and their employee record.">
+        <Link to="/employees" className="btn btn-light">Back to employees</Link>
+      </PageHeader>
+      <form className="panel p-4" style={{ maxWidth: 680 }} onSubmit={submit}>
         <div className="row g-3">
           <div className="col-md-6"><label className="form-label">Full name</label><input className="form-control" required value={form.name} onChange={set('name')} /></div>
           <div className="col-md-6"><label className="form-label">Email</label><input type="email" className="form-control" required value={form.email} onChange={set('email')} /></div>
@@ -64,7 +63,7 @@ export default function Register() {
             </div>
           )}
         </div>
-        <button className="btn btn-primary mt-4" disabled={busy}>{busy ? 'Registering...' : 'Register'}</button>
+        <button className="btn btn-primary mt-4" disabled={busy}>{busy ? 'Registering...' : 'Register person'}</button>
       </form>
     </>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './AuthContext.jsx';
-import Navbar from './components/Navbar.jsx';
+import Layout from './components/Layout.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import Login from './components/auth/Login.jsx';
 import Register from './components/auth/Register.jsx';
@@ -66,12 +66,9 @@ function AnnouncementsPage() {
   return user.role === 'employee' ? <Announcements /> : <AnnouncementsManager />;
 }
 
-export default function App() {
+function AppRoutes() {
   const { user } = useAuth();
-
   return (
-    <>
-      {user && <Navbar />}
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
@@ -84,6 +81,10 @@ export default function App() {
         <Route path="/reports" element={<ProtectedRoute roles={['hr']}><Reports /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
-    </>
   );
+}
+
+export default function App() {
+  const { user } = useAuth();
+  return user ? <Layout><AppRoutes /></Layout> : <AppRoutes />;
 }

@@ -36,3 +36,27 @@ export function downloadCSV(filename, rows) {
 
 // Today's date in the browser's own time zone as YYYY-MM-DD (used for report date ranges)
 export const localDay = () => new Date().toLocaleDateString('en-CA');
+
+// "7h 32m" between two timestamps
+export const fmtDuration = (from, to) => {
+  if (!from || !to) return '-';
+  const m = Math.max(0, Math.round((new Date(to) - new Date(from)) / 60000));
+  return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`;
+};
+
+// "5 minutes ago", "yesterday", or the date for anything older than a week
+export const timeAgo = (d) => {
+  const mins = Math.round((Date.now() - new Date(d).getTime()) / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.round(hrs / 24);
+  if (days === 1) return 'yesterday';
+  if (days < 7) return `${days} days ago`;
+  return new Date(d).toLocaleDateString();
+};
+
+// Date-only values (leave dates, event dates, training dates) are stored at midnight UTC,
+// so show them in UTC. That keeps "5 March" as 5 March in every time zone.
+export const fmtDay = (d) => (d ? new Date(d).toLocaleDateString(undefined, { timeZone: 'UTC' }) : '-');
